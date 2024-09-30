@@ -63,7 +63,7 @@ func main() {
 		// Call the next handler with the updated context
 		handler.ServeHTTP(w, r.WithContext(ctx))
 	})
-	fmt.Println("ConnectRPC is serving at :8080")
+	fmt.Printf("ConnectRPC is serving at :%s\n", os.Getenv("PORT"))
 	mux.Handle(path, corsHandler)
 
 	http.ListenAndServe(
