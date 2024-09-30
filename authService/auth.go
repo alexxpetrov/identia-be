@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"os"
 
 	// Add this line
 
@@ -86,10 +87,16 @@ func (s *AuthServiceServer) BeginRegistration(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
+	RpID := "localhost"
+
+	if os.Getenv("PUBLIC_URL") != "" {
+		RpID = os.Getenv("PUBLIC_URL")
+	}
+
 	// Respond with challenge and relying party (RP) ID
 	resp := &authv1.BeginRegistrationResponse{
 		Challenge: challenge,
-		RpId:      "localhost", // Replace with your RP ID (your domain)
+		RpId:      RpID, // Replace with your RP ID (your domain)
 	}
 	return connect.NewResponse(resp), nil
 }
@@ -155,10 +162,15 @@ func (s *AuthServiceServer) BeginLogin(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
+	RpID := "localhost"
+
+	if os.Getenv("PUBLIC_URL") != "" {
+		RpID = os.Getenv("PUBLIC_URL")
+	}
 	// Respond with challenge and relying party (RP) ID
 	resp := &authv1.BeginLoginResponse{
 		Challenge: challenge,
-		RpId:      "localhost", // Replace with your RP ID (your domain)
+		RpId:      RpID, // Replace with your RP ID (your domain)
 	}
 	return connect.NewResponse(resp), nil
 }
