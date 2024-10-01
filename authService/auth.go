@@ -22,27 +22,36 @@ type User struct {
 	LastName  string `json:"lastName"`
 }
 
-func Auth(user User) (string, error) {
+type AuthServiceServer struct{}
+
+func (s *AuthServiceServer) Register(
+	ctx context.Context,
+	req *connect.Request[authv1.RegisterRequest],
+) (*connect.Response[authv1.RegisterResponse], error) {
 	var err error
 
 	gormUser := db.User{}
-	id, err := gormUser.CreateAdmin(user.Email, user.Password, user.FirstName, user.LastName)
+	id, err := gormUser.CreateAdmin(req.Msg.Email, req.Msg.Password, req.Msg.FirstName, req.Msg.LastName)
 
 	if err != nil {
-		return "", err
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New(err.Error()))
 	}
 
 	token, err := jwtService.GenerateJWTPair(id)
 
 	if err != nil {
 		fmt.Println("Error generating JWT:", err)
-		return "", err
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New(err.Error()))
 	}
 
-	return token, err
-}
+	res := connect.NewResponse(&authv1.RegisterResponse{
+		AccessToken: token,
+	})
 
-type AuthServiceServer struct{}
+	res.Header().Set("Set-Cookie", jwtService.GetConnectRpcAccessTokenCookie(token))
+
+	return res, nil
+}
 
 func (s *AuthServiceServer) Login(
 	ctx context.Context,
@@ -67,7 +76,6 @@ func (s *AuthServiceServer) Login(
 	res := connect.NewResponse(&authv1.LoginResponse{
 		AccessToken: token,
 	})
-	res.Header().Set("Login-Version", "v1")
 	res.Header().Set("Set-Cookie", jwtService.GetConnectRpcAccessTokenCookie(token))
 	return res, nil
 }
