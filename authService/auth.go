@@ -90,7 +90,7 @@ func (s *AuthServiceServer) BeginRegistration(
 	RpID := "localhost"
 
 	if os.Getenv("PUBLIC_URL") != "" {
-		RpID = "upbeatbenevolance.xyz"
+		RpID = "www.upbeatbenevolance.xyz"
 	}
 
 	// Respond with challenge and relying party (RP) ID
@@ -165,7 +165,7 @@ func (s *AuthServiceServer) BeginLogin(
 	RpID := "localhost"
 
 	if os.Getenv("PUBLIC_URL") != "" {
-		RpID = "upbeatbenevolance.xyz"
+		RpID = "www.upbeatbenevolance.xyz"
 	}
 	// Respond with challenge and relying party (RP) ID
 	resp := &authv1.BeginLoginResponse{
