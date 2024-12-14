@@ -25,9 +25,9 @@ func generateJTI() (string, error) {
 	return base64.URLEncoding.EncodeToString(b), nil
 }
 
-var ACCESS_TOKEN_EXPIRATION = 10 * time.Second
+var ACCESS_TOKEN_EXPIRATION = 1 * time.Hour
 
-var REFRESH_TOKEN_EXPIRATION = 7 * ACCESS_TOKEN_EXPIRATION
+var REFRESH_TOKEN_EXPIRATION = 24 * ACCESS_TOKEN_EXPIRATION * 7
 var ACCESS_TOKEN_EXPIRATION_DEVELOPMENT = REFRESH_TOKEN_EXPIRATION
 
 func isDevelopment() bool {
