@@ -47,6 +47,11 @@ const (
 	AuthServiceBeginLoginProcedure = "/auth.v1.AuthService/BeginLogin"
 	// AuthServiceFinishLoginProcedure is the fully-qualified name of the AuthService's FinishLogin RPC.
 	AuthServiceFinishLoginProcedure = "/auth.v1.AuthService/FinishLogin"
+	// AuthServiceRefreshAccessTokenProcedure is the fully-qualified name of the AuthService's
+	// RefreshAccessToken RPC.
+	AuthServiceRefreshAccessTokenProcedure = "/auth.v1.AuthService/RefreshAccessToken"
+	// AuthServiceLogoutProcedure is the fully-qualified name of the AuthService's Logout RPC.
+	AuthServiceLogoutProcedure = "/auth.v1.AuthService/Logout"
 )
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
@@ -58,6 +63,8 @@ var (
 	authServiceFinishRegistrationMethodDescriptor = authServiceServiceDescriptor.Methods().ByName("FinishRegistration")
 	authServiceBeginLoginMethodDescriptor         = authServiceServiceDescriptor.Methods().ByName("BeginLogin")
 	authServiceFinishLoginMethodDescriptor        = authServiceServiceDescriptor.Methods().ByName("FinishLogin")
+	authServiceRefreshAccessTokenMethodDescriptor = authServiceServiceDescriptor.Methods().ByName("RefreshAccessToken")
+	authServiceLogoutMethodDescriptor             = authServiceServiceDescriptor.Methods().ByName("Logout")
 )
 
 // AuthServiceClient is a client for the auth.v1.AuthService service.
@@ -68,6 +75,8 @@ type AuthServiceClient interface {
 	FinishRegistration(context.Context, *connect.Request[v1.FinishRegistrationRequest]) (*connect.Response[v1.FinishRegistrationResponse], error)
 	BeginLogin(context.Context, *connect.Request[v1.BeginLoginRequest]) (*connect.Response[v1.BeginLoginResponse], error)
 	FinishLogin(context.Context, *connect.Request[v1.FinishLoginRequest]) (*connect.Response[v1.FinishLoginResponse], error)
+	RefreshAccessToken(context.Context, *connect.Request[v1.RefreshAccessTokenRequest]) (*connect.Response[v1.RefreshAccessTokenResponse], error)
+	Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error)
 }
 
 // NewAuthServiceClient constructs a client for the auth.v1.AuthService service. By default, it uses
@@ -116,6 +125,18 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceFinishLoginMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
+		refreshAccessToken: connect.NewClient[v1.RefreshAccessTokenRequest, v1.RefreshAccessTokenResponse](
+			httpClient,
+			baseURL+AuthServiceRefreshAccessTokenProcedure,
+			connect.WithSchema(authServiceRefreshAccessTokenMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		logout: connect.NewClient[v1.LogoutRequest, v1.LogoutResponse](
+			httpClient,
+			baseURL+AuthServiceLogoutProcedure,
+			connect.WithSchema(authServiceLogoutMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -127,6 +148,8 @@ type authServiceClient struct {
 	finishRegistration *connect.Client[v1.FinishRegistrationRequest, v1.FinishRegistrationResponse]
 	beginLogin         *connect.Client[v1.BeginLoginRequest, v1.BeginLoginResponse]
 	finishLogin        *connect.Client[v1.FinishLoginRequest, v1.FinishLoginResponse]
+	refreshAccessToken *connect.Client[v1.RefreshAccessTokenRequest, v1.RefreshAccessTokenResponse]
+	logout             *connect.Client[v1.LogoutRequest, v1.LogoutResponse]
 }
 
 // Login calls auth.v1.AuthService.Login.
@@ -159,6 +182,16 @@ func (c *authServiceClient) FinishLogin(ctx context.Context, req *connect.Reques
 	return c.finishLogin.CallUnary(ctx, req)
 }
 
+// RefreshAccessToken calls auth.v1.AuthService.RefreshAccessToken.
+func (c *authServiceClient) RefreshAccessToken(ctx context.Context, req *connect.Request[v1.RefreshAccessTokenRequest]) (*connect.Response[v1.RefreshAccessTokenResponse], error) {
+	return c.refreshAccessToken.CallUnary(ctx, req)
+}
+
+// Logout calls auth.v1.AuthService.Logout.
+func (c *authServiceClient) Logout(ctx context.Context, req *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error) {
+	return c.logout.CallUnary(ctx, req)
+}
+
 // AuthServiceHandler is an implementation of the auth.v1.AuthService service.
 type AuthServiceHandler interface {
 	Login(context.Context, *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error)
@@ -167,6 +200,8 @@ type AuthServiceHandler interface {
 	FinishRegistration(context.Context, *connect.Request[v1.FinishRegistrationRequest]) (*connect.Response[v1.FinishRegistrationResponse], error)
 	BeginLogin(context.Context, *connect.Request[v1.BeginLoginRequest]) (*connect.Response[v1.BeginLoginResponse], error)
 	FinishLogin(context.Context, *connect.Request[v1.FinishLoginRequest]) (*connect.Response[v1.FinishLoginResponse], error)
+	RefreshAccessToken(context.Context, *connect.Request[v1.RefreshAccessTokenRequest]) (*connect.Response[v1.RefreshAccessTokenResponse], error)
+	Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error)
 }
 
 // NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -211,6 +246,18 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(authServiceFinishLoginMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
+	authServiceRefreshAccessTokenHandler := connect.NewUnaryHandler(
+		AuthServiceRefreshAccessTokenProcedure,
+		svc.RefreshAccessToken,
+		connect.WithSchema(authServiceRefreshAccessTokenMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	authServiceLogoutHandler := connect.NewUnaryHandler(
+		AuthServiceLogoutProcedure,
+		svc.Logout,
+		connect.WithSchema(authServiceLogoutMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/auth.v1.AuthService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AuthServiceLoginProcedure:
@@ -225,6 +272,10 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 			authServiceBeginLoginHandler.ServeHTTP(w, r)
 		case AuthServiceFinishLoginProcedure:
 			authServiceFinishLoginHandler.ServeHTTP(w, r)
+		case AuthServiceRefreshAccessTokenProcedure:
+			authServiceRefreshAccessTokenHandler.ServeHTTP(w, r)
+		case AuthServiceLogoutProcedure:
+			authServiceLogoutHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -256,4 +307,12 @@ func (UnimplementedAuthServiceHandler) BeginLogin(context.Context, *connect.Requ
 
 func (UnimplementedAuthServiceHandler) FinishLogin(context.Context, *connect.Request[v1.FinishLoginRequest]) (*connect.Response[v1.FinishLoginResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.FinishLogin is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) RefreshAccessToken(context.Context, *connect.Request[v1.RefreshAccessTokenRequest]) (*connect.Response[v1.RefreshAccessTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.RefreshAccessToken is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.Logout is not implemented"))
 }

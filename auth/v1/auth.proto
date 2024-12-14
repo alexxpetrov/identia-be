@@ -59,6 +59,23 @@ message FinishLoginResponse {
   string accessToken = 1;
 }
 
+message RefreshAccessTokenRequest {
+  string userId = 1;
+  string accessToken = 2;
+}
+
+message RefreshAccessTokenResponse {
+  string accessToken = 1;
+}
+
+message LogoutRequest {
+  string accessToken = 1;
+}
+
+message LogoutResponse {
+  bool ok = 1;
+}
+
 service AuthService {
   rpc Login (LoginRequest) returns (LoginResponse);
   rpc Register (RegisterRequest) returns (RegisterResponse);
@@ -66,4 +83,6 @@ service AuthService {
   rpc FinishRegistration (FinishRegistrationRequest) returns (FinishRegistrationResponse);
   rpc BeginLogin (BeginLoginRequest) returns (BeginLoginResponse);
   rpc FinishLogin (FinishLoginRequest) returns (FinishLoginResponse);
+  rpc RefreshAccessToken (RefreshAccessTokenRequest) returns (RefreshAccessTokenResponse);
+  rpc Logout (LogoutRequest) returns (LogoutResponse);
 }
