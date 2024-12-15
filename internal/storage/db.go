@@ -29,8 +29,8 @@ func InitDB() *AuthStorage {
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
 	prodDbUrl := os.Getenv("DATABASE_URL")
-	prodShard1Url := os.Getenv("POSTGRES_PROD_SHARD_1_URL")
-	prodShard2Url := os.Getenv("POSTGRES_PROD_SHARD_2_URL")
+	// prodShard1Url := os.Getenv("POSTGRES_PROD_SHARD_1_URL")
+	// prodShard2Url := os.Getenv("POSTGRES_PROD_SHARD_2_URL")
 
 	var DBConn *gorm.DB
 	var shardDBs []*gorm.DB
@@ -39,26 +39,26 @@ func InitDB() *AuthStorage {
 		fmt.Printf("Connecting to database %s", prodDbUrl)
 		DBConn, err = gorm.Open(postgres.Open(prodDbUrl), &gorm.Config{TranslateError: true})
 
-		shardDBs = []*gorm.DB{
-			initShardDB(prodShard1Url),
-			initShardDB(prodShard2Url),
-			// Add more shards here
-		}
+		// shardDBs = []*gorm.DB{
+		// 	initShardDB(prodShard1Url),
+		// 	initShardDB(prodShard2Url),
+		// 	// Add more shards here
+		// }
 	} else {
 		connStr := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", dbUser, dbPassword, dbUrl, dbName)
 		fmt.Printf("Connecting to database postgres://%s:%s@%s/%s?sslmode=disable", dbUser, dbPassword, dbUrl, dbName)
 
 		DBConn, err = gorm.Open(postgres.Open(connStr), &gorm.Config{TranslateError: true})
 
-		shardDBs = []*gorm.DB{
-			initShardDB(fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", dbUser, dbPassword, dbUrl, "shard1")),
-			initShardDB(fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", dbUser, dbPassword, dbUrl, "shard2")),
-			// Add more shards here
-		}
+		// shardDBs = []*gorm.DB{
+		// 	initShardDB(fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", dbUser, dbPassword, dbUrl, "shard1")),
+		// 	initShardDB(fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", dbUser, dbPassword, dbUrl, "shard2")),
+		// 	// Add more shards here
+		// }
 	}
 
 	shardWriteQueue := make(chan User, 100)
-	go shardWorker(shardWriteQueue, shardDBs)
+	// go shardWorker(shardWriteQueue, shardDBs)
 
 	// Connection string (replace with your actual PostgreSQL credentials)
 
@@ -78,17 +78,17 @@ func InitDB() *AuthStorage {
 		fmt.Println("Failed to migrate database!")
 		panic(err)
 	}
-	for _, shard := range shardDBs {
-		err = shard.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"").Error
-		if err != nil {
-			panic("Failed to create extension!")
-		}
-		err = shard.AutoMigrate(&User{}, &RefreshToken{})
-		if err != nil {
-			fmt.Println("Failed to migrate shard database!")
-			panic(err)
-		}
-	}
+	// for _, shard := range shardDBs {
+	// 	err = shard.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"").Error
+	// 	if err != nil {
+	// 		panic("Failed to create extension!")
+	// 	}
+	// 	err = shard.AutoMigrate(&User{}, &RefreshToken{})
+	// 	if err != nil {
+	// 		fmt.Println("Failed to migrate shard database!")
+	// 		panic(err)
+	// 	}
+	// }
 
 	return &AuthStorage{
 		connection:      DBConn,
