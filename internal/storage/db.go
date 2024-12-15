@@ -60,8 +60,6 @@ func InitDB() *AuthStorage {
 	shardWriteQueue := make(chan User, 100)
 	// go shardWorker(shardWriteQueue, shardDBs)
 
-	// Connection string (replace with your actual PostgreSQL credentials)
-
 	if err != nil {
 		panic("Failed to connect to database!")
 	}

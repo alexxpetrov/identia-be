@@ -55,7 +55,9 @@ func (c *Components) Shutdown() {
 }
 
 func SetupLogger(env string) *slog.Logger {
-	var logger *slog.Logger
+	var logger *slog.Logger = slog.New(
+		slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
+	)
 
 	switch env {
 	case envLocal:
