@@ -42,9 +42,14 @@ type GrpcServer struct {
 
 func New(logger *slog.Logger, userService *storage.UserService, jwtService *jwtService.JwtServiceStore, erdtreeClient dbv1connect.ErdtreeStoreClient) (*GrpcServer, error) {
 	publicUrl := os.Getenv("PUBLIC_URL")
+	erdTreeUrl := os.Getenv("ERDTREE_URL")
 	port := os.Getenv("PORT")
 
-	auth := auth.NewExternalClient("http://localhost:50051", userService, jwtService, erdtreeClient)
+	if erdTreeUrl == "" {
+		erdTreeUrl = os.Getenv("ERDTREE_LOCAL_URL")
+	}
+
+	auth := auth.NewExternalClient(erdTreeUrl, userService, jwtService, erdtreeClient)
 	mux := http.NewServeMux()
 	interceptors := connect.WithInterceptors(NewAuthInterceptor())
 	path, handler := authv1connect.NewAuthServiceHandler(auth, interceptors)
@@ -52,9 +57,8 @@ func New(logger *slog.Logger, userService *storage.UserService, jwtService *jwtS
 	corsHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if publicUrl != "" {
 			w.Header().Set("Access-Control-Allow-Origin", publicUrl)
-
 		} else {
-			w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+			w.Header().Set("Access-Control-Allow-Origin", os.Getenv("CLIENT_URL"))
 		}
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Set-Cookie, connect-protocol-version")

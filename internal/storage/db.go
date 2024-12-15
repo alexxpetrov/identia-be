@@ -28,16 +28,16 @@ func InitDB() *AuthStorage {
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
-	prodUrl := os.Getenv("POSTGRES_PROD_URL")
+	prodDbUrl := os.Getenv("DATABASE_URL")
 	prodShard1Url := os.Getenv("POSTGRES_PROD_SHARD_1_URL")
 	prodShard2Url := os.Getenv("POSTGRES_PROD_SHARD_2_URL")
 
 	var DBConn *gorm.DB
 	var shardDBs []*gorm.DB
 
-	if prodUrl != "" {
-		fmt.Printf("Connecting to database %s", prodUrl)
-		DBConn, err = gorm.Open(postgres.Open(prodUrl), &gorm.Config{TranslateError: true})
+	if prodDbUrl != "" {
+		fmt.Printf("Connecting to database %s", prodDbUrl)
+		DBConn, err = gorm.Open(postgres.Open(prodDbUrl), &gorm.Config{TranslateError: true})
 
 		shardDBs = []*gorm.DB{
 			initShardDB(prodShard1Url),
@@ -195,26 +195,6 @@ func (authStore *AuthStorage) CreateJTITable() {
 	}
 
 	fmt.Println("Refresh Tokens Table created successfully!")
-}
-
-func (authStore *AuthStorage) CreateUserMoodRecordsTable() {
-	query := `
-	CREATE TABLE IF NOT EXISTS user_mood_records (
-    	id UUID NOT NULL,
-    	user_id TEXT NOT NULL,
-    	year INTEGER NOT NULL,
-    	month INTEGER NOT NULL,
-    	day INTEGER NOT NULL,
-    	mood_id INTEGER NOT NULL,
-		updated_at TIMESTAMPTZ NOT NULL,
-		created_at TIMESTAMPTZ NOT NULL
-	);`
-
-	if err := authStore.connection.Exec(query).Error; err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("user mood table created!")
 }
 
 func (authStore *AuthStorage) GetDB() *gorm.DB {
