@@ -178,7 +178,7 @@ func (jwtStore JwtServiceStore) GenerateJWTAccessToken(userId string) (string, e
 		Email:     userData.Email,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
-			Issuer:    "go-server",
+			Issuer:    "identia-be",
 		},
 	}
 
@@ -208,7 +208,7 @@ func GenerateJWTRefreshToken(userId string) (string, time.Time, error) {
 		ID: userId,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
-			Issuer:    "go-server",
+			Issuer:    "identia-be",
 			ID:        jti, // Set JTI in the refresh token
 		},
 	}

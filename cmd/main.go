@@ -25,8 +25,8 @@ func main() {
 	serverComponents, _ := components.InitComponents(logger)
 
 	if err != nil {
-		logger.Error("bad configuration", slog.String("error", err.Error()))
-		os.Exit(1)
+		logger.Error("bad configuration. missing env file", slog.String("error", err.Error()))
+		// os.Exit(1)
 	}
 
 	defer serverComponents.Shutdown()

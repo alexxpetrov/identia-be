@@ -34,9 +34,15 @@ func InitComponents(logger *slog.Logger) (*Components, error) {
 
 	jwtServiceS := jwtService.New(logger, userService)
 
+	erdTreeUrl := os.Getenv("ERDTREE_URL")
+
+	if erdTreeUrl == "" {
+		erdTreeUrl = os.Getenv("ERDTREE_LOCAL_URL")
+	}
+
 	erdtreeClient := dbv1connect.NewErdtreeStoreClient(
 		http.DefaultClient,
-		"http://localhost:50051", // Server URL
+		erdTreeUrl, // Server URL
 	)
 
 	grpcServer, _ := grpcServer.New(logger, userService, jwtServiceS, erdtreeClient)

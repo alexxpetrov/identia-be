@@ -144,13 +144,15 @@ func (userService *UserService) findRefreshTokenByUserId(userId string) (*gorm.D
 }
 
 func (userService *UserService) GetUserById(id string) (User, error) {
-	user, err := ReadFromShard(id, userService.shards)
+	var user User
+	var err error
+	// user, err := ReadFromShard(id, userService.shards)
 
-	if err != nil {
-		if err = userService.connection.Where("user_id = ?", id).First(&user).Error; err != nil {
-			return user, err
-		}
+	// if err != nil {
+	if err := userService.connection.Where("user_id = ?", id).First(&user).Error; err != nil {
+		return user, err
 	}
+	// }
 	return user, err
 }
 
