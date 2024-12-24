@@ -185,7 +185,7 @@ func (s *AuthServiceServer) BeginRegistration(
 	RpID := "localhost"
 
 	if os.Getenv("PUBLIC_URL") != "" {
-		RpID = "www." + os.Getenv("PUBLIC_DOMAIN")
+		RpID = os.Getenv("PUBLIC_DOMAIN")
 	}
 
 	// Respond with challenge and relying party (RP) ID
@@ -251,7 +251,7 @@ func (s *AuthServiceServer) FinishRegistration(
 
 	if err != nil {
 		fmt.Println("Error setting webauthn register record in Erdtree:", err)
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New(err.Error()))
+		// return nil, connect.NewError(connect.CodeUnauthenticated, errors.New(err.Error()))
 	}
 
 	res := connect.NewResponse(&authv1.FinishRegistrationResponse{AccessToken: token})
@@ -273,7 +273,7 @@ func (s *AuthServiceServer) BeginLogin(
 	RpID := "localhost"
 
 	if os.Getenv("PUBLIC_URL") != "" {
-		RpID = "www." + os.Getenv("PUBLIC_DOMAIN")
+		RpID = os.Getenv("PUBLIC_DOMAIN")
 	}
 	// Respond with challenge and relying party (RP) ID
 	resp := &authv1.BeginLoginResponse{
@@ -335,7 +335,7 @@ func (s *AuthServiceServer) FinishLogin(
 	if err != nil {
 		fmt.Println("Error setting webauthn login record in Erdtree:", err)
 
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New(err.Error()))
+		// return nil, connect.NewError(connect.CodeUnauthenticated, errors.New(err.Error()))
 	}
 
 	res := connect.NewResponse(&authv1.FinishLoginResponse{AccessToken: token})

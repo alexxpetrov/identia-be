@@ -49,15 +49,12 @@ func New(logger *slog.Logger, userService *storage.UserService, jwtService *jwtS
 	if erdTreeUrl == "" {
 		erdTreeUrl = os.Getenv("ERDTREE_LOCAL_URL")
 	}
-	fmt.Println("PASS 1")
 
 	auth := auth.NewExternalClient(erdTreeUrl, userService, jwtService, erdtreeClient)
-	fmt.Println("PASS 2")
 
 	mux := http.NewServeMux()
 	interceptors := connect.WithInterceptors(NewAuthInterceptor())
 	path, handler := authv1connect.NewAuthServiceHandler(auth, interceptors)
-	fmt.Println("PASS 3")
 
 	corsHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if publicUrl != "" {
